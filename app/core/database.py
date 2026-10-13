@@ -37,13 +37,24 @@ async def connect_to_mongo() -> None:
     sanitized_url = re.sub(r"://([^:]+):([^@]+)@", r"://\1:[REDACTED]@", settings.MONGODB_URL)
     logger.info("Connecting to MongoDB at %s...", sanitized_url)
     try:
+        client_kwargs: dict = {
+            "minPoolSize": settings.MONGODB_MIN_POOL_SIZE,
+            "maxPoolSize": settings.MONGODB_MAX_POOL_SIZE,
+            "serverSelectionTimeoutMS": settings.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
+            "socketTimeoutMS": 10000,
+            "maxIdleTimeMS": 60000,
+        }
+        if "mongodb+srv://" in settings.MONGODB_URL or "tls=true" in settings.MONGODB_URL.lower():
+            try:
+                import certifi
+
+                client_kwargs["tlsCAFile"] = certifi.where()
+            except ImportError:
+                pass
+
         db_manager.client = AsyncIOMotorClient(
             settings.MONGODB_URL,
-            minPoolSize=settings.MONGODB_MIN_POOL_SIZE,
-            maxPoolSize=settings.MONGODB_MAX_POOL_SIZE,
-            serverSelectionTimeoutMS=settings.MONGODB_SERVER_SELECTION_TIMEOUT_MS,
-            socketTimeoutMS=10000,
-            maxIdleTimeMS=60000,
+            **client_kwargs,
         )
         # Verify connection with an admin ping
         await db_manager.client.admin.command("ping")
