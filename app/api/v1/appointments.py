@@ -46,7 +46,13 @@ async def get_available_slots(
     "/hold",
     response_model=HoldSlotResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def hold_slot(
     req: HoldSlotRequest,
@@ -62,7 +68,13 @@ async def hold_slot(
     "/confirm",
     response_model=AppointmentResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def confirm_booking(
     req: ConfirmBookingRequest,
@@ -85,7 +97,13 @@ async def confirm_booking(
     "",
     response_model=AppointmentResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def create_appointment(
     appt_in: AppointmentCreate,
@@ -143,7 +161,13 @@ async def get_appointment(
     "/{appointment_id}/cancel",
     response_model=AppointmentResponse,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def cancel_appointment(
     appointment_id: str,
@@ -158,7 +182,13 @@ async def cancel_appointment(
     "/{appointment_id}/reschedule",
     response_model=AppointmentResponse,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def reschedule_appointment(
     appointment_id: str,

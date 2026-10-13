@@ -57,7 +57,9 @@ def create_application() -> FastAPI:
         lifespan=lifespan,
         docs_url="/docs" if settings.DEBUG or settings.ENVIRONMENT != "production" else None,
         redoc_url="/redoc" if settings.DEBUG or settings.ENVIRONMENT != "production" else None,
-        openapi_url="/openapi.json" if settings.DEBUG or settings.ENVIRONMENT != "production" else None,
+        openapi_url="/openapi.json"
+        if settings.DEBUG or settings.ENVIRONMENT != "production"
+        else None,
     )
 
     # Global Observability & Protection Middlewares (executed in reverse registration order)

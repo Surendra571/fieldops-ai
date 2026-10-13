@@ -91,7 +91,7 @@ The booking engine was inspected against 10 critical failure and concurrency sce
      ```python
      claimed = await db["slot_reservations"].find_one_and_update(
          {"_id": reservation["_id"], "status": {"$in": ["HELD", "CONFIRMING"]}},
-         {"$set": {"status": "CONFIRMING", "claim_id": claim_id, "claim_expires_at": lease}}
+         {"$set": {"status": "CONFIRMING", "claim_id": claim_id, "claim_expires_at": lease}},
      )
      ```
    - Result: Only one process secures the lease; the loser either receives the already-confirmed appointment or `409 Conflict`.

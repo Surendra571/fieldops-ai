@@ -21,7 +21,13 @@ router = APIRouter(prefix="/work-orders", tags=["Work Orders"])
     "",
     response_model=WorkOrderResponse,
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def create_work_order(
     wo_in: WorkOrderCreate,

@@ -43,7 +43,13 @@ async def list_customers(
     "/{customer_id}",
     response_model=CustomerResponse,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER))],
+    dependencies=[
+        Depends(
+            require_roles(
+                UserRole.ADMIN, UserRole.DISPATCHER, UserRole.TECHNICIAN, UserRole.CUSTOMER
+            )
+        )
+    ],
 )
 async def get_customer(
     customer_id: str,
