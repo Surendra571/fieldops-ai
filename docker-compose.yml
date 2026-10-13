@@ -1,0 +1,155 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fieldops-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=FieldOps AI
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - API_V1_STR=/api/v1
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DB_NAME=fieldops_dev
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production-minimum-32-chars
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 20s
+    volumes:
+      - .:/app
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  mongo:
+    image: mongo:7.0
+    container_name: fieldops-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=fieldops_dev
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    stop_grace_period: 20s
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: fieldops-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    stop_grace_period: 15s
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fieldops-celery-worker
+    restart: unless-stopped
+    environment:
+      - PROJECT_NAME=FieldOps AI
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DB_NAME=fieldops_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - NOTIFICATION_PROVIDER=mock
+      - MAPS_PROVIDER=mock
+      - CALENDAR_PROVIDER=mock
+      - CRM_PROVIDER=mock
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    stop_grace_period: 30s
+    volumes:
+      - .:/app
+    command: ["celery", "-A", "app.core.celery_app", "worker", "-l", "info", "--concurrency", "2"]
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fieldops-celery-beat
+    restart: unless-stopped
+    environment:
+      - PROJECT_NAME=FieldOps AI
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DB_NAME=fieldops_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    stop_grace_period: 15s
+    volumes:
+      - .:/app
+    command: ["celery", "-A", "app.core.celery_app", "beat", "-l", "info"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fieldops-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    stop_grace_period: 15s
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+

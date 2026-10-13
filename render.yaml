@@ -1,0 +1,81 @@
+services:
+  # ---------------------------------------------------------------------------
+  # FieldOps AI — Backend API Web Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: fieldops-api
+    runtime: python
+    region: ohio
+    plan: starter
+    buildCommand: pip install --upgrade pip && pip install ".[dev]"
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health/live
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_V1_STR
+        value: /api/v1
+      - key: MONGODB_URL
+        sync: false
+        # Enter your MongoDB Atlas connection string:
+        # e.g., mongodb+srv://fieldops_admin:<password>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority
+      - key: MONGODB_DB_NAME
+        value: fieldops_prod
+      - key: MONGODB_MIN_POOL_SIZE
+        value: "10"
+      - key: MONGODB_MAX_POOL_SIZE
+        value: "50"
+      - key: MONGODB_SERVER_SELECTION_TIMEOUT_MS
+        value: "5000"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: CORS_ORIGINS
+        sync: false
+        # Set to your deployed Vercel frontend URL:
+        # e.g., https://fieldops-ai.vercel.app
+      - key: NOTIFICATION_PROVIDER
+        value: mock
+      - key: MAPS_PROVIDER
+        value: mock
+      - key: CALENDAR_PROVIDER
+        value: mock
+      - key: CRM_PROVIDER
+        value: mock
+      - key: VOICE_STT_PROVIDER
+        value: mock
+      - key: VOICE_TTS_PROVIDER
+        value: mock
+      - key: LLM_PROVIDER
+        value: mock
+      - key: LOG_FORMAT
+        value: json
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "120"
+      - key: REQUEST_TIMEOUT_SECONDS
+        value: "30.0"
+      - key: CONVERSATION_HISTORY_LIMIT
+        value: "20"
+      - key: AGENT_TIMEOUT_SECONDS
+        value: "15.0"
+      - key: PROMPT_INJECTION_STRICT_MODE
+        value: "true"
+      - key: WEBHOOK_SIGNING_SECRET
+        generateValue: true
+      - key: WEBHOOK_TOLERANCE_SECONDS
+        value: "300"
+      - key: SEED_ADMIN_EMAIL
+        value: admin@fieldops.ai
+      - key: SEED_ADMIN_PASSWORD
+        generateValue: true
+
